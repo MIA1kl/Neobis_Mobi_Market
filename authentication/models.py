@@ -34,43 +34,33 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=255, unique=True, db_index=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    is_verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']
-    
+
     objects = UserManager()
-    
+
     def __str__(self):
         return self.username
-    
+
     def tokens(self):
         refresh = RefreshToken.for_user(self)
         return {
             'refresh': str(refresh),
             'access': str(refresh.access_token)
         }
-    
+
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     first_name = models.CharField(max_length=255, null=True, blank=True)
     last_name = models.CharField(max_length=255, null=True, blank=True)
+    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
     birth_date = models.DateField(null=True, blank=True, default=None)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
-    is_verified = models.BooleanField(default=False)
-    # image = models.ImageField(default="default.jpg")
 
+    def __str__(self):
+        return f"{self.user.username}'s Profile"
 
-
-def create_user_profile(sender, instance, created, **kwargs):
-    if created:
-        Profile.objects.create(user=instance)
-
-def save_user_profile(sender, instance, **kwargs):
-    instance.profile.save()
-
-# post_save.connect(create_user_profile, sender=User)
-# post_save.connect(save_user_profile, sender=User)
-        

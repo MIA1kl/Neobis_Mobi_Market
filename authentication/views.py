@@ -1,9 +1,11 @@
 from django.shortcuts import render
 from rest_framework import generics, permissions
-from .serializers import RegisterSerializer, LoginSerializer, LogoutSerializer
+from .serializers import RegisterSerializer, LoginSerializer, LogoutSerializer, ProfileEditSerializer, ProfileSerializer, ProfileViewSerializer
 from rest_framework import status
 from rest_framework.response import Response
-
+from rest_framework.decorators import action
+from .models import User
+from rest_framework import viewsets
 # Create your views here.
 
 
@@ -44,3 +46,17 @@ class LogoutAPIView(generics.GenericAPIView):
         serializer.save()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ProfileViewAPIView(generics.RetrieveAPIView):
+    serializer_class = ProfileViewSerializer
+    # permission_classes = (permissions.IsAuthenticated,)
+    lookup_field = 'username'
+    queryset = User.objects.all()
+
+
+class ProfileEditAPIView(generics.RetrieveUpdateAPIView):
+    serializer_class = ProfileEditSerializer
+    # permission_classes = (permissions.IsAuthenticated,)
+    lookup_field = 'username'
+    queryset = User.objects.all()

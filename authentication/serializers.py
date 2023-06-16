@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User
+from .models import User, Profile
 from django.contrib import auth
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
@@ -7,6 +7,7 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import smart_str, force_str, smart_bytes, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.contrib.auth.password_validation import validate_password
+
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -93,3 +94,40 @@ class LogoutSerializer(serializers.Serializer):
 
         except TokenError:
             self.fail('bad_token')
+            
+
+# serializers.py
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ('first_name', 'last_name', 'avatar', 'birth_date', 'phone_number')
+
+
+class ProfileViewSerializer(serializers.ModelSerializer):
+    profile = ProfileSerializer()
+
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email', 'profile')
+
+
+class ProfileEditSerializer(serializers.ModelSerializer):
+    profile = ProfileSerializer()
+
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email', 'profile')
+        read_only_fields = ('username', 'email')
+
+    def update(self, instance, validated_data):
+        profile_data = validated_data.pop('profile')
+        profile, _ = Profile.objects.get_or_create(user=instance)
+        profile.first_name = profile_data.get('first_name', profile.first_name)
+        profile.last_name = profile_data.get('last_name', profile.last_name)
+        profile.avatar = profile_data.get('avatar', profile.avatar)
+        profile.phone_number = profile_data.get('phone_number', profile.phone_number)
+        profile.birth_date = profile_data.get('birth_date', profile.birth_date)
+        profile.save()
+
+        return instance
