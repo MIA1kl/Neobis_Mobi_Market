@@ -10,7 +10,7 @@ services:
       - pgdata:/var/lib/posgresql/data
   web:
     build: .
-    command: gunicorn neoMobiMarket.wsgi:application --bind 0.0.0.0:8000
+    command: bash -c "python manage.py collectstatic --no-input && python manage.py migrate" && gunicorn neoMobiMarket.wsgi:application --bind 0.0.0.0:8000
     volumes:
       - static_volume:/code/static
     expose:
