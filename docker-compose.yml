@@ -1,25 +1,30 @@
-version: '3.10'
-
+version: '3'
 services:
-
   db:
-    image: postgres:latest
-    restart: always
+    image: postgres
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      DATABASE_HOSTNAME: ${POSTGRES_HOST}
-    ports:
-      - "5432:5432"
+      - POSTGRES_DB=mydatabase
+      - POSTGRES_USER=myuser
+      - POSTGRES_PASSWORD=password
     volumes:
-      - "./postgres:/var/lib/postgresql/data"
-
-  app:
+      - pgdata:/var/lib/posgresql/data
+  web:
     build: .
-    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
-    container_name: Neobis_Mobi_Market
+    command: gunicorn neoMobiMarket.wsgi:application --bind 0.0.0.0:8000
     volumes:
-      - .:/Neobis_Mobi_Market 
+      - static_volume:/code/static
+    expose:
+      - 8000
+    depends_on:
+      - db
+  nginx:
+    build: ./nginx
+    volumes:
+      - static_volume:/code/static
     ports:
-      - "8000:8000"
+      - 80:80
+    depends_on:
+      - web
+volumes:
+  pgdata:
+  static_volume:
