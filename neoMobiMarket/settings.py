@@ -26,7 +26,7 @@ SITE_ROOT = os.path.dirname(os.path.realpath(__file__))
 SECRET_KEY = 'django-insecure-bdph+x26klh)a3tq%2(p*7shf1oq02--r!4ehso)nd1qdgi!gi'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'NO').lower() in ('on', 'true', 'y', 'yes')
+DEBUG = config('DEBUG')
 
 ALLOWED_HOSTS = ['*']
 

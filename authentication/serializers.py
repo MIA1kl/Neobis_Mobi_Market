@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Profile
+from .models import User
 from django.contrib import auth
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
@@ -99,38 +99,51 @@ class LogoutSerializer(serializers.Serializer):
             self.fail('bad_token')
             
 
-# serializers.py
-
-class ProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Profile
-        fields = ('first_name', 'last_name', 'avatar', 'birth_date', 'phone_number')
 
 
 class ProfileViewSerializer(serializers.ModelSerializer):
-    profile = ProfileSerializer()
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'profile')
+        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'avatar', 'birth_date', 'phone_number')
 
 
 class ProfileEditSerializer(serializers.ModelSerializer):
-    profile = ProfileSerializer()
-
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'profile')
+        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'avatar', 'birth_date')
         read_only_fields = ('username', 'email')
 
     def update(self, instance, validated_data):
-        profile_data = validated_data.pop('profile')
-        profile, _ = Profile.objects.get_or_create(user=instance)
-        profile.first_name = profile_data.get('first_name', profile.first_name)
-        profile.last_name = profile_data.get('last_name', profile.last_name)
-        profile.avatar = profile_data.get('avatar', profile.avatar)
-        profile.phone_number = profile_data.get('phone_number', profile.phone_number)
-        profile.birth_date = profile_data.get('birth_date', profile.birth_date)
-        profile.save()
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.avatar = validated_data.get('avatar', instance.avatar)
+        instance.birth_date = validated_data.get('birth_date', instance.birth_date)
+        instance.save()
 
         return instance
+
+
+    
+class PhoneEntrySerializer(serializers.Serializer):
+    phone_number = serializers.CharField(max_length=15)
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email', 'phone_number')
+        read_only_fields = ('username', 'email')
+    def update(self, instance, validated_data):
+        instance.phone_number = validated_data.get('phone_number', instance.phone_number)
+        instance.save()
+
+        return instance
+
+class PhoneVerificationSerializer(serializers.Serializer):
+    verification_code = serializers.CharField(max_length=4, write_only=True)
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email', 'phone_number', 'verification_code')
+        read_only_fields = ('username', 'email')
+    def validate_verification_code(self, value):
+        if not value.isdigit() or len(value) != 4:
+            raise serializers.ValidationError("Invalid verification code. Please enter a 4-digit numeric code.")
+        return value

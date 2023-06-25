@@ -5,12 +5,13 @@ services:
     environment:
       - POSTGRES_DB=mydatabase
       - POSTGRES_USER=myuser
+      - POSTGRES_PORT=5432
       - POSTGRES_PASSWORD=password
     volumes:
       - pgdata:/var/lib/posgresql/data
   web:
     build: .
-    command: bash -c "python manage.py collectstatic --no-input && python manage.py migrate && gunicorn neoMobiMarket.wsgi:application --bind 0.0.0.0:8000"
+    command: bash -c "python manage.py collectstatic --no-input && python manage.py makemigrations && python manage.py migrate && gunicorn neoMobiMarket.wsgi:application --bind 0.0.0.0:8000"
     volumes:
       - static_volume:/code/static
     expose:
