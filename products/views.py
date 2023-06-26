@@ -8,7 +8,6 @@ class ProductListView(generics.ListAPIView):
     serializer_class = ProductSerializer
 
 class ProductUserView(generics.ListAPIView):
-    queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
     def get_queryset(self):
@@ -20,13 +19,7 @@ class ProductDetailView(generics.RetrieveAPIView):
     serializer_class = ProductDetailSerializer
     lookup_field = 'pk'
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        product_id = self.kwargs['id']
-        return queryset.filter(id=product_id)
-
 class ProductCreateView(generics.CreateAPIView):
-    queryset = Product.objects.all()
     serializer_class = ProductDetailSerializer
 
     def perform_create(self, serializer):
@@ -34,3 +27,13 @@ class ProductCreateView(generics.CreateAPIView):
         username = self.kwargs['username']
         user = User.objects.get(username=username)
         serializer.save(username=user)
+
+class ProductDeleteView(generics.DestroyAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    lookup_field = 'pk'
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        username = self.kwargs['username']
+        return queryset.filter(username__username=username)
