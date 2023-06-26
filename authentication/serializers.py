@@ -125,24 +125,26 @@ class ProfileEditSerializer(serializers.ModelSerializer):
 
 
     
-class PhoneEntrySerializer(serializers.Serializer):
+class PhoneEntrySerializer(serializers.ModelSerializer):
     phone_number = serializers.CharField(max_length=15)
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'phone_number')
-        read_only_fields = ('username', 'email')
+        read_only_fields = ('id','username', 'email')
+        
     def update(self, instance, validated_data):
         instance.phone_number = validated_data.get('phone_number', instance.phone_number)
         instance.save()
 
         return instance
 
-class PhoneVerificationSerializer(serializers.Serializer):
+class PhoneVerificationSerializer(serializers.ModelSerializer):
     verification_code = serializers.CharField(max_length=4, write_only=True)
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'phone_number', 'verification_code')
-        read_only_fields = ('username', 'email')
+        fields = ('id', 'username', 'email', 'verification_code')
+        read_only_fields = ('id','username', 'email', 'phone_number')
+        
     def validate_verification_code(self, value):
         if not value.isdigit() or len(value) != 4:
             raise serializers.ValidationError("Invalid verification code. Please enter a 4-digit numeric code.")

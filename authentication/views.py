@@ -65,10 +65,9 @@ class ProfileEditAPIView(generics.UpdateAPIView):
     queryset = User.objects.all()
 
     
-class PhoneEntryAPIView(APIView):
-    permission_classes = []
+class PhoneEntryAPIView(generics.UpdateAPIView):
     serializer_class = PhoneEntrySerializer
-
+    lookup_field = 'username'
     def post(self, request, username):
         user = get_object_or_404(User, username=username)
         serializer = self.serializer_class(user, data=request.data, partial=True)
@@ -102,7 +101,7 @@ class PhoneEntryAPIView(APIView):
         else:
             return Response({'status': 'error', 'message': 'Phone number is required.'})
 
-class PhoneVerificationAPIView(APIView):
+class PhoneVerificationAPIView(generics.UpdateAPIView):
     serializer_class = PhoneVerificationSerializer
 
     def post(self, request, username):
