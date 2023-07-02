@@ -37,3 +37,23 @@ class ProductDeleteView(generics.DestroyAPIView):
         queryset = super().get_queryset()
         username = self.kwargs['username']
         return queryset.filter(username__username=username)
+    
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
+class ProductAddFavoriteView(APIView):
+    def post(self, request, username, pk):
+        product = Product.objects.get(username__username=username, pk=pk)
+        product.is_favorite = True
+        product.save()
+        return Response({"message": "Product added to favorites."})
+
+    
+class FavoriteProductListView(generics.ListAPIView):
+    serializer_class = ProductSerializer
+
+    def get_queryset(self):
+        username = self.kwargs['username']
+        return Product.objects.filter(username__username=username, is_favorite=True)
+
+
