@@ -2,6 +2,9 @@ from rest_framework import generics
 from .models import Product
 from authentication.models import User
 from .serializers import ProductSerializer, ProductDetailSerializer
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.response import Response
 
 class ProductListView(generics.ListAPIView):
     queryset = Product.objects.all()
@@ -20,15 +23,18 @@ class ProductDetailView(generics.RetrieveAPIView):
     lookup_field = 'pk'
 
 class ProductCreateView(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated] 
+
     serializer_class = ProductDetailSerializer
 
     def perform_create(self, serializer):
-        # Set the username to the user specified in the URL
         username = self.kwargs['username']
         user = User.objects.get(username=username)
         serializer.save(username=user)
 
 class ProductDeleteView(generics.DestroyAPIView):
+    permission_classes = [IsAuthenticated] 
+
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     lookup_field = 'pk'
@@ -38,18 +44,31 @@ class ProductDeleteView(generics.DestroyAPIView):
         username = self.kwargs['username']
         return queryset.filter(username__username=username)
     
-from rest_framework.views import APIView
-from rest_framework.response import Response
+
+
 
 class ProductAddFavoriteView(APIView):
+    permission_classes = [IsAuthenticated] 
     def post(self, request, username, pk):
-        product = Product.objects.get(username__username=username, pk=pk)
+        product = Product.objects.get(pk=pk)
+
+        if product.username.username == username:
+            return Response({"message": "You cannot add your own product to favorites."})
+
+        if request.user in product.favorites.all():
+            return Response({"message": "Product is already in favorites."})
+
         product.is_favorite = True
+        product.favorite_count += 1
+        product.favorites.add(request.user)
         product.save()
         return Response({"message": "Product added to favorites."})
 
+
+
     
 class FavoriteProductListView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated] 
     serializer_class = ProductSerializer
 
     def get_queryset(self):

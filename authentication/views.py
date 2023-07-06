@@ -15,6 +15,8 @@ from django.shortcuts import get_object_or_404
 from rest_framework.permissions import AllowAny
 from phonenumbers import parse, format_number, PhoneNumberFormat
 from phonenumbers.phonenumberutil import NumberParseException
+from rest_framework.permissions import IsAuthenticated
+
 
 
 class RegisterView(generics.GenericAPIView):
@@ -41,7 +43,8 @@ class LoginAPIView(generics.GenericAPIView):
 class LogoutAPIView(generics.GenericAPIView):
     serializer_class = LogoutSerializer
 
-    # permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = [IsAuthenticated] 
+
 
     def post(self, request):
 
@@ -54,18 +57,22 @@ class LogoutAPIView(generics.GenericAPIView):
 
 class ProfileViewAPIView(generics.RetrieveAPIView):
     serializer_class = ProfileViewSerializer
-    # permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = [IsAuthenticated] 
     lookup_field = 'username'
     queryset = User.objects.all()
 
 
 class ProfileEditAPIView(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated] 
+
     serializer_class = ProfileEditSerializer
     lookup_field = 'username'
     queryset = User.objects.all()
 
     
 class PhoneEntryAPIView(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated] 
+
     serializer_class = PhoneEntrySerializer
     lookup_field = 'username'
     def post(self, request, username):
@@ -102,6 +109,8 @@ class PhoneEntryAPIView(generics.CreateAPIView):
             return Response({'status': 'error', 'message': 'Phone number is required.'})
 
 class PhoneVerificationAPIView(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated] 
+
     serializer_class = PhoneVerificationSerializer
 
     def post(self, request, username):

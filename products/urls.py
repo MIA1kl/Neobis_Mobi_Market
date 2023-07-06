@@ -7,7 +7,7 @@ urlpatterns = [
     path('products/<int:pk>/', ProductDetailView.as_view(), name='product-detail'),
     path('products/myproduct/<str:username>/create/', ProductCreateView.as_view(), name='product-create'),
     path('products/myproduct/<str:username>/<int:pk>/delete/', ProductDeleteView.as_view(), name='product-delete'),
-    path('products/<str:username>/<int:pk>/favorite/', ProductAddFavoriteView.as_view(), name='product-favorite'),
+    path('products/favorite/<str:username>/<int:pk>/', ProductAddFavoriteView.as_view(), name='product-favorite'),
     path('products/favorites/<str:username>/', FavoriteProductListView.as_view(), name='favorite-product-list'),
 
 ]

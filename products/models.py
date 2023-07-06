@@ -9,6 +9,8 @@ class Product(models.Model):
     short_description = models.CharField(max_length=150)
     detailed_description = models.TextField()
     is_favorite = models.BooleanField(default=False)
+    favorite_count = models.PositiveIntegerField(default=0)
+    favorites = models.ManyToManyField(User, related_name='favorite_products', blank=True)
 
     def __str__(self):
         return f"id: {self.pk} - user_id: {self.username_id} - title: {self.product_name}"
