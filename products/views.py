@@ -5,6 +5,7 @@ from .serializers import ProductSerializer, ProductDetailSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework import status
 
 class ProductListView(generics.ListAPIView):
     queryset = Product.objects.all()
@@ -65,8 +66,6 @@ class ProductAddFavoriteView(APIView):
         return Response({"message": "Product added to favorites."})
 
 
-
-    
 class FavoriteProductListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated] 
     serializer_class = ProductSerializer
@@ -74,5 +73,23 @@ class FavoriteProductListView(generics.ListAPIView):
     def get_queryset(self):
         username = self.kwargs['username']
         return Product.objects.filter(username__username=username, is_favorite=True)
+    
+class ProductRemoveFavoriteView(APIView):
+    permission_classes = [IsAuthenticated]     
+    def delete(self, request, username, pk):
+
+        product = Product.objects.get(pk=pk)
+
+        if product.username.username == username:
+            return Response({"message": "You cannot remove your own product from favorites."}, status=status.HTTP_403_FORBIDDEN)
+
+        if request.user not in product.favorites.all():
+            return Response({"message": "Product is not in favorites."}, status=status.HTTP_404_NOT_FOUND)
+
+        product.is_favorite = False
+        product.favorite_count -= 1
+        product.favorites.remove(request.user)
+        product.save()
+        return Response({"message": "Product removed from favorites."}, status=status.HTTP_200_OK)
 
 
